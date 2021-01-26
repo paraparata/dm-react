@@ -1,0 +1,19 @@
+.portrait {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (orientation: landscape) {
+  .portrait {
+    display: none;
+  }
+}
+
+@media (orientation: portrait) {
+  .landscape {
+    display: none;
+  }
+}
