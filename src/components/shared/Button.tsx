@@ -8,7 +8,7 @@ interface OptionalProps {
 }
 
 function Button({
-  classes = "my-auto px-2 py-2 rounded-lg border border-gray-900",
+  classes = "my-auto px-2 py-2 rounded-lg border-2 border-gray-900",
   icon = null,
   title = null,
   onButtonClick,

@@ -1,4 +1,13 @@
-# Getting Started with Create React App
+# dm-react
+
+## Tasks
+
+- [ ] add updateAudioTime function
+- [ ] add mounted function
+- [ ] modal individual effect
+- [ ] add active property into Pad component
+
+---
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
