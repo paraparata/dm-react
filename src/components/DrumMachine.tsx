@@ -5,6 +5,7 @@ import Led from "./shared/Led";
 import Rack from "./Rack";
 import PRESETS from "../assets/presets";
 import "./DrumMachine.css";
+import { debug } from "console";
 
 let audioContext: AudioContext;
 audioContext = new AudioContext();
@@ -74,6 +75,7 @@ export default function DrumMachine() {
       sineNoiseMix: number;
     }[]
   >([]);
+  // eslint-disable-next-line
   const [stepCount, setStepCount] = useState(16);
   const [currentStep, setCurrentStep] = useState(0);
   const [secondsPerStep, setSecondsPerStep] = useState(0);
@@ -82,13 +84,11 @@ export default function DrumMachine() {
   const [mutes, setMutes] = useState<boolean[]>([]);
   const [playing, setPlaying] = useState(true);
   const [tempo, setTempo] = useState(120);
-  const [audioTime, setAudioTime] = useState(undefined);
-
-  const instrumentCount = useMemo(() => {
-    return instruments.length;
-  }, [instruments]);
+  const [audioTime, setAudioTime] = useState<any>(undefined);
 
   useEffect(() => {
+    console.log(instruments);
+
     // Add some instruments
     for (let i = 0; i < 4; i += 1) {
       setInstruments((preVal) => {
@@ -106,17 +106,18 @@ export default function DrumMachine() {
       setMutes((preVal) => [...preVal, false]);
       randomizeDrums();
     }
-
     // Create empty patterns
-    for (let i = 0; i < instrumentCount; i += 1) {
+    for (let i = 0; i < instruments.length; i += 1) {
       setPattern([...pattern, []]);
       for (let j = 0; j < stepCount; j += 1) {
         setPattern(() => {
-          pattern[j].push({ active: false });
+          pattern[i].push({ active: false });
           return pattern;
         });
       }
     }
+
+    updateAudioTime();
 
     loadPreset(PRESETS[0]);
     if (!window.AudioContext) setPlaying((preVal) => !preVal);
@@ -189,11 +190,46 @@ export default function DrumMachine() {
     return stepTime;
   }
 
+  function updateAudioTime() {
+    if (playing) {
+      const LOOK_AHEAD = 0.1;
+      setSecondsPerStep(60 / tempo / 4);
+      setAudioTime(audioContext.currentTime);
+      setCurrentStep(Math.floor((audioTime / secondsPerStep) % stepCount));
+
+      for (const inst of pattern) {
+        if (!mutes[inst]) {
+          for (const step in pattern[inst]) {
+            if (pattern[inst][step].active) {
+              const schedule = getSchedule(step, audioTime);
+              if (
+                schedule > 0 &&
+                schedule - audioTime < LOOK_AHEAD &&
+                schedule > lastScheduledTime
+              ) {
+                scheduleNote(instruments[inst], schedule);
+              }
+            }
+          }
+        }
+      }
+
+      setLastScheduledTime(audioTime + LOOK_AHEAD);
+    }
+    requestAnimationFrame(updateAudioTime);
+  }
+
   return (
     <div className="h-screen w-screen">
       <RotateDir />
       <div className="landscape h-full w-full">
-        <Controller />
+        <Controller
+          onPlayPause={pausePlay}
+          onRandomSteps={randomizeSteps}
+          onRandomDrums={randomizeDrums}
+          onClearSteps={clearSteps}
+          onTempoChange={() => console.log("hey")}
+        />
         <div className="px-3 flex justify-between">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(
             (val) => {
