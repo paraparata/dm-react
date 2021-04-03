@@ -11753,6 +11753,11 @@
     "chokidar" "^3.4.1"
     "watchpack-chokidar2" "^2.0.1"
 
+"waveform-generator-web@^0.0.4":
+  "integrity" "sha512-xX4d6UNAkvRwl0tk4KTmPQn4Ld1Hc2cUcNxm1IfM2TlxJffTUq37pq62g5Gm4tZJ5fS36lSGRdjKaq353kwM6A=="
+  "resolved" "https://registry.npmjs.org/waveform-generator-web/-/waveform-generator-web-0.0.4.tgz"
+  "version" "0.0.4"
+
 "wbuf@^1.1.0", "wbuf@^1.7.3":
   "integrity" "sha512-O84QOnr0icsbFGLS0O3bI5FswxzRr8/gHwWkDlQFskhSPryQXvrTMxjxGP4+iWYoauLoBvfDpkrOauZ+0iZpDA=="
   "resolved" "https://registry.npmjs.org/wbuf/-/wbuf-1.7.3.tgz"

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Howl } from "howler";
+import WaveformGenerator from "waveform-generator-web";
 
 import Button from "../components/ui/Button/Button";
 import Control from "../components/bases/Control/Control";
@@ -11,7 +12,7 @@ const pads = [];
 const constraints = { audio: true };
 
 for (let i = 0; i < 16; i++) {
-  pads.push(null);
+  pads.push({ src: null, thumbnail: "" });
 }
 
 export default function Drumpads() {
@@ -19,6 +20,25 @@ export default function Drumpads() {
   const [audioBlob, setAudioBlob] = useState(pads);
   const [isRecord, setIsRecord] = useState(false);
   const [mRecorderState, setMRecorderState] = useState();
+
+  const generateWaveform = async (blob, padId) => {
+    const options = {
+      waveformColor: "#2e2e2e",
+      waveformWidth: 20,
+      waveformHeight: 20,
+      barGap: 1.5,
+      drawMode: "svg",
+    };
+    const buffer = await blob.arrayBuffer();
+    const waveformGenerator = new WaveformGenerator(buffer);
+    const result = await waveformGenerator.getWaveform(options);
+
+    setAudioBlob(() => {
+      return audioBlob.map((item, id) =>
+        id === padId ? { ...item, thumbnail: result } : item
+      );
+    });
+  };
 
   const onGUMSuccess = (stream, padId) => {
     let chunks = [];
@@ -38,8 +58,12 @@ export default function Drumpads() {
       chunks = [];
       const audioURL = window.URL.createObjectURL(blob);
       setAudioBlob(() => {
-        return audioBlob.map((item, id) => (id === padId ? audioURL : item));
+        return audioBlob.map((item, id) =>
+          id === padId ? { ...item, src: audioURL } : item
+        );
       });
+
+      generateWaveform(blob, padId);
       console.log("recorder stopped");
     };
 
@@ -67,7 +91,6 @@ export default function Drumpads() {
     console.log("recorder stopped");
   };
   const handleOnPadClick = (audioPad) => {
-    console.log(audioPad);
     const sound = new Howl({
       src: [audioPad],
       format: ["ogg"],
@@ -98,7 +121,7 @@ export default function Drumpads() {
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <div>
         <Header />
-        <hr />
+        {/* <hr /> */}
       </div>
       <div style={{ flex: 1, padding: "0.5rem" }}>
         <div
@@ -109,7 +132,7 @@ export default function Drumpads() {
             gap: "0.5rem",
           }}
         >
-          <Visualizer streamSrc={streamSrc} />
+          <Visualizer streamSrc={streamSrc} style={{ width: "100%" }} />
         </div>
         <div
           style={{
@@ -119,31 +142,40 @@ export default function Drumpads() {
             gap: "0.5rem",
           }}
         >
-          <Button variant="blok" onClick={() => setIsRecord(false)}>
+          <Button variant="blok" onClick={() => console.log(audioBlob)}>
             Play
           </Button>
-          <Button variant="blok" onClick={() => setIsRecord(true)}>
-            Record
-          </Button>
+          <Button variant="blok">Record</Button>
         </div>
         <Control />
+      </div>
+      <div style={{ padding: "0.5rem" }}>
         <div
           style={{
-            marginTop: "12px",
+            marginBottom: "8px",
             height: "30px",
             display: "flex",
             gap: "0.5rem",
           }}
         >
-          <Button variant="blok" onClick={() => console.log(audioBlob)}>
-            Keys
+          <Button
+            variant="blok"
+            style={{ background: !isRecord ? "#ff7b54" : "#939b62" }}
+            onClick={() => setIsRecord(false)}
+          >
+            LiveSession
           </Button>
-          <Button variant="blok">ClearNote</Button>
-          <Button variant="blok">ClearAll</Button>
-          <Button variant="blok">Bars</Button>
+          <Button
+            variant="blok"
+            style={{ background: isRecord ? "#ff7b54" : "#939b62" }}
+            onClick={() => setIsRecord(true)}
+          >
+            RecordSession
+          </Button>
+          <Button variant="blok" onClick={() => setAudioBlob(pads)}>
+            ClearAll
+          </Button>
         </div>
-      </div>
-      <div style={{ padding: "0.5rem" }}>
         <Grid>
           {audioBlob.map((pad, index) => {
             if (isRecord) {
@@ -151,17 +183,47 @@ export default function Drumpads() {
                 <Button
                   key={index}
                   variant="full"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                   onTouchStart={() => handleOnPadTouchStart(index)}
                   onTouchEnd={() => handleOnPadTouchEnd(mRecorderState)}
-                />
+                >
+                  <div
+                    style={{
+                      width: "80%",
+                      aspectRatio: "1/1",
+                      border: "1px solid #2e2e2e",
+                      borderRadius: "4px",
+                      background: `url(${pad.thumbnail})`,
+                    }}
+                  />
+                </Button>
               );
             } else {
               return (
                 <Button
                   key={index}
                   variant="full"
-                  onClick={() => handleOnPadClick(pad)}
-                />
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={() => handleOnPadClick(pad.src)}
+                >
+                  <div
+                    style={{
+                      width: "80%",
+                      aspectRatio: "1/1",
+                      border: "1px solid #2e2e2e",
+                      borderRadius: "4px",
+                      background: `url(${pad.thumbnail})`,
+                    }}
+                  />
+                </Button>
               );
             }
           })}

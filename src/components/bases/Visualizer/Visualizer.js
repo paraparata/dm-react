@@ -24,11 +24,11 @@ function visualize(stream, canvas) {
 
     analyser.getByteTimeDomainData(dataArray);
 
-    canvasCtx.fillStyle = "rgb(200, 200, 200)";
+    canvasCtx.fillStyle = "#ffb26b";
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+    canvasCtx.strokeStyle = "#2e2e2e";
 
     canvasCtx.beginPath();
 
@@ -53,15 +53,14 @@ function visualize(stream, canvas) {
   }
 }
 
-export default function Visualizer({ streamSrc }) {
+export default function Visualizer({ streamSrc, ...props }) {
   const canvasRef = useRef();
 
   useEffect(() => {
-    console.log(streamSrc);
     if (streamSrc !== undefined) {
       visualize(streamSrc, canvasRef.current);
     }
   }, [streamSrc]);
 
-  return <canvas ref={canvasRef} height="60px"></canvas>;
+  return <canvas ref={canvasRef} height="60px" {...props}></canvas>;
 }
