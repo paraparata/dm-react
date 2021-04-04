@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./Header.module.scss";
 
-import Button from "../../ui/Button/Button";
+import Button from "../../ui/Button";
 
 import MenuIcon from "../../icons/Menu";
 import ThreeDotsVer from "../../icons/ThreeDotsVer";

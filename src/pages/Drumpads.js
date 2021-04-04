@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Howl } from "howler";
-import WaveformGenerator from "waveform-generator-web";
 
-import Button from "../components/ui/Button/Button";
-import Control from "../components/bases/Control/Control";
-import Grid from "../components/ui/Grid/Grid";
-import Header from "../components/bases/Header/Header";
-import Visualizer from "../components/bases/Visualizer/Visualizer";
+import Button from "../components/ui/Button";
+import Control from "../components/bases/Control";
+import Grid from "../components/ui/Grid";
+import Header from "../components/bases/Header";
+import Pad, { generateWaveform } from "../components/bases/Pad";
+import Visualizer from "../components/bases/Visualizer";
 
 const pads = [];
 const constraints = { audio: true };
@@ -21,25 +21,6 @@ export default function Drumpads() {
   const [isRecord, setIsRecord] = useState(false);
   const [mRecorderState, setMRecorderState] = useState();
 
-  const generateWaveform = async (blob, padId) => {
-    const options = {
-      waveformColor: "#2e2e2e",
-      waveformWidth: 20,
-      waveformHeight: 20,
-      barGap: 1.5,
-      drawMode: "svg",
-    };
-    const buffer = await blob.arrayBuffer();
-    const waveformGenerator = new WaveformGenerator(buffer);
-    const result = await waveformGenerator.getWaveform(options);
-
-    setAudioBlob(() => {
-      return audioBlob.map((item, id) =>
-        id === padId ? { ...item, thumbnail: result } : item
-      );
-    });
-  };
-
   const onGUMSuccess = (stream, padId) => {
     let chunks = [];
     const mediaRecorder = new MediaRecorder(stream);
@@ -51,19 +32,20 @@ export default function Drumpads() {
     console.log(mediaRecorder.state);
     console.log("recorder started");
 
-    mediaRecorder.onstop = (e) => {
+    mediaRecorder.onstop = async (e) => {
       console.log("data available after MediaRecorder.stop() called.");
 
       const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
       chunks = [];
       const audioURL = window.URL.createObjectURL(blob);
+
+      const audioWaveform = await generateWaveform(blob);
       setAudioBlob(() => {
         return audioBlob.map((item, id) =>
-          id === padId ? { ...item, src: audioURL } : item
+          id === padId ? { src: audioURL, thumbnail: audioWaveform } : item
         );
       });
 
-      generateWaveform(blob, padId);
       console.log("recorder stopped");
     };
 
@@ -121,7 +103,6 @@ export default function Drumpads() {
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <div>
         <Header />
-        {/* <hr /> */}
       </div>
       <div style={{ flex: 1, padding: "0.5rem" }}>
         <div
@@ -142,10 +123,16 @@ export default function Drumpads() {
             gap: "0.5rem",
           }}
         >
-          <Button variant="blok" onClick={() => console.log(audioBlob)}>
+          <Button
+            variant="blok"
+            disabled={true}
+            onClick={() => console.log(audioBlob)}
+          >
             Play
           </Button>
-          <Button variant="blok">Record</Button>
+          <Button variant="blok" disabled={true}>
+            Record
+          </Button>
         </div>
         <Control />
       </div>
@@ -178,54 +165,16 @@ export default function Drumpads() {
         </div>
         <Grid>
           {audioBlob.map((pad, index) => {
-            if (isRecord) {
-              return (
-                <Button
-                  key={index}
-                  variant="full"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  onTouchStart={() => handleOnPadTouchStart(index)}
-                  onTouchEnd={() => handleOnPadTouchEnd(mRecorderState)}
-                >
-                  <div
-                    style={{
-                      width: "80%",
-                      aspectRatio: "1/1",
-                      border: "1px solid #2e2e2e",
-                      borderRadius: "4px",
-                      background: `url(${pad.thumbnail})`,
-                    }}
-                  />
-                </Button>
-              );
-            } else {
-              return (
-                <Button
-                  key={index}
-                  variant="full"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={() => handleOnPadClick(pad.src)}
-                >
-                  <div
-                    style={{
-                      width: "80%",
-                      aspectRatio: "1/1",
-                      border: "1px solid #2e2e2e",
-                      borderRadius: "4px",
-                      background: `url(${pad.thumbnail})`,
-                    }}
-                  />
-                </Button>
-              );
-            }
+            return (
+              <Pad
+                key={index}
+                isHold={isRecord}
+                thumbnail={pad.thumbnail}
+                onTouchStart={() => handleOnPadTouchStart(index)}
+                onTouchEnd={() => handleOnPadTouchEnd(mRecorderState)}
+                onClick={() => handleOnPadClick(pad.src)}
+              />
+            );
           })}
         </Grid>
       </div>

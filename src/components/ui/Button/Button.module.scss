@@ -6,7 +6,7 @@
   position: relative;
   border: none;
   border-radius: 4px;
-  box-shadow: inset -3px -4px $colors-shadow;
+  box-shadow: inset -3px -4px $color-shadow;
   outline: none;
   font-size: 16px;
   font-weight: bold;
@@ -15,7 +15,7 @@
   // &:hover {
   //   right: 1px;
   //   bottom: 4px;
-  //   box-shadow: inset -3px -4px $colors-shadow, 3px 4px $colors-shadow;
+  //   box-shadow: inset -3px -4px $color-shadow, 3px 4px $color-shadow;
   // }
 
   &:active {
@@ -24,6 +24,7 @@
     box-shadow: none;
   }
 
+  // Size
   &-super {
     padding: 0.75rem 1rem;
   }
@@ -35,5 +36,48 @@
   &-full {
     width: 100%;
     height: 100%;
+  }
+
+  // Variant
+  &-disabled {
+    position: relative;
+
+    &::before {
+      width: 4px;
+      height: 100%;
+      position: absolute;
+      left: calc(48% - 4px);
+      top: 0;
+      content: " ";
+      background: scale-color($color-secondary, $lightness: -30%);
+      transform: rotate(8deg);
+      // background-image: linear-gradient(
+      //   98deg,
+      //   transparent 0% 44%,
+      //   $color-black 44% 20px,
+      //   $color-accent-1 20px 52%,
+      //   transparent 52% 100%
+      // );
+      // // background-position: left 0 top 2.5em;
+      // background-repeat: no-repeat;
+    }
+
+    &::after {
+      width: 6px;
+      height: 100%;
+      position: absolute;
+      left: 48%;
+      top: 0;
+      z-index: 5;
+      content: " ";
+      background: $color-accent-1;
+      transform: rotate(8deg);
+    }
+
+    &:active {
+      left: 0;
+      top: 0;
+      box-shadow: inset -3px -4px $color-shadow;
+    }
   }
 }

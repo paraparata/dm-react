@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./Control.module.scss";
 
-import Button from "../../ui/Button/Button";
+import Button from "../../ui/Button";
 
 const pads = [];
 
@@ -13,7 +13,7 @@ export default function Control() {
   return (
     <div className={styles.control}>
       {pads.map((pad) => {
-        return <Button key={pad} variant="full" />;
+        return <Button key={pad} variant="full" disabled={true} />;
       })}
     </div>
   );
